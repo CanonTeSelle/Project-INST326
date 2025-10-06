@@ -27,6 +27,8 @@ Saad (Testing & Reports) — implement:
 record_usage_pattern, generate_waste_report, mark_expired_items, calculate_reorder_list, forecast_demand 
 
 
+Function Library:
+
 Canon:
 generate_unique_id(prefix='ITEM') – Generate a unique ID for a new inventory item.
 
@@ -41,15 +43,17 @@ generate_restock_plan(inventory, usage_log, lead_time_days=3) – Produce a sugg
 
 
 Ben:
+add_new_item(inventory, item_id, name, unit, threshold=0) – Add a new item to the inventory.
+
+add_batch(inventory, item_id, quantity, expiration=None) – Add a batch for an item with quantity and optional expiration date.
+
+format_inventory_snapshot(inventory) – Return a readable table of inventory items and quantities.
+
+export_inventory_csv(inventory, filepath) – Export inventory batches to a CSV file.
+
+calculate_file_checksum(path) – Compute SHA256 checksum of a file.
 
 
 
+Saad:
 
-
-
-
-
-
-
-
-Saad
