@@ -30,6 +30,7 @@ record_usage_pattern, generate_waste_report, mark_expired_items, calculate_reord
 Function Library:
 
 Canon:
+
 generate_unique_id(prefix='ITEM') – Generate a unique ID for a new inventory item.
 
 reduce_stock_on_sale(inventory, item_id, quantity, use_fifo=True) – Reduce stock for sold items using FIFO.
@@ -42,7 +43,9 @@ generate_restock_plan(inventory, usage_log, lead_time_days=3) – Produce a sugg
 
 
 
+
 Ben:
+
 add_new_item(inventory, item_id, name, unit, threshold=0) – Add a new item to the inventory.
 
 add_batch(inventory, item_id, quantity, expiration=None) – Add a batch for an item with quantity and optional expiration date.
@@ -57,3 +60,12 @@ calculate_file_checksum(path) – Compute SHA256 checksum of a file.
 
 Saad:
 
+record_usage_pattern(usage_log, item_id, quantity, timestamp=None) – Record a usage event for analysis.
+
+generate_waste_report(waste_log, start, end) – Aggregate waste quantities per item within a date range.
+
+mark_expired_items(inventory) – Mark expired batches as unusable and return list of affected items.
+
+calculate_reorder_list(inventory) – Return items below threshold for restocking.
+
+forecast_demand(usage_log, item_id, window_days=30) – Predict daily demand based on recent usage history.
