@@ -25,3 +25,31 @@ generate_unique_id, reduce_stock_on_sale, compute_available_quantity, alert_expi
 
 Saad (Testing & Reports) — implement:
 record_usage_pattern, generate_waste_report, mark_expired_items, calculate_reorder_list, forecast_demand 
+
+
+Canon:
+generate_unique_id(prefix='ITEM') – Generate a unique ID for a new inventory item.
+
+reduce_stock_on_sale(inventory, item_id, quantity, use_fifo=True) – Reduce stock for sold items using FIFO.
+
+compute_available_quantity(inventory, item_id, include_expired=False) – Compute total available quantity for an item.
+
+alert_expiring_items(inventory, days_threshold=3) – List batches expiring within a threshold.
+
+generate_restock_plan(inventory, usage_log, lead_time_days=3) – Produce a suggested restock plan.
+
+
+
+Ben:
+
+
+
+
+
+
+
+
+
+
+
+Saad
