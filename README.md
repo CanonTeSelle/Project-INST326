@@ -27,7 +27,7 @@ Saad (Testing & Reports) — implement:
 record_usage_pattern, generate_waste_report, mark_expired_items, calculate_reorder_list, forecast_demand 
 
 
-Function Library:
+Simple version of Function Library(full version in Functions_library.ipynb):
 
 Canon:
 
