@@ -24,5 +24,20 @@ alert_expiring_items(days_threshold=3) → near-expiry batches
 __str__ / __repr__
 
 
+2. Batch
+
+Purpose: Represents a single batch for an inventory item.
+
+Attributes: _quantity, _expiration
+
+Methods:
+
+is_expired() → check if expired
+
+use(quantity) → reduce batch quantity (support FIFO)
+
+__str__ / __repr__
+
+
 
 
