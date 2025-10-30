@@ -217,3 +217,33 @@ class Inventory:
         return plan
 
 
+
+
+ #UsageLog class - tracks usage and forecasts demand
+class UsageLog:
+    # Initialize usage log
+    def __init__(self):
+        self._usage_records = defaultdict(list)  # item_id -> list of {"quantity", "timestamp"}
+
+    # Record a usage event
+    def record_usage(self, item_id: str, quantity: int, timestamp: datetime = None):
+        if timestamp is None:
+            timestamp = datetime.now()
+        self._usage_records[item_id].append({"quantity": quantity, "timestamp": timestamp})
+
+    # Forecast demand for an item
+    def forecast_demand(self, item_id: str, window_days: int = 30):
+        if item_id not in self._usage_records or not self._usage_records[item_id]:
+            raise KeyError(f"No usage data for {item_id}")
+        data = self._usage_records[item_id][-window_days:]
+        total_qty = sum(entry["quantity"] for entry in data)
+        unique_days = len(set(e["timestamp"].date() for e in data))
+        return round(total_qty / max(unique_days, 1), 2)
+
+    # Generate waste report for a period
+    def generate_waste_report(self, waste_log: list, start: date, end: date):
+        report = defaultdict(int)
+        for entry in waste_log:
+            if start <= entry["date"] <= end:
+                report[entry["item_id"]] += entry["quantity"]
+        return dict(report)
