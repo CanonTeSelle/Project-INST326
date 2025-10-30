@@ -148,4 +148,72 @@ class InventoryItem:
 
 
 
-    
+# Inventory class - manages all inventory items
+class Inventory:
+    # Initialize inventory
+    def __init__(self):
+        self._items = {}  # Dictionary mapping item_id -> InventoryItem
+
+    # Add new item to inventory
+    def add_new_item(self, item_id: str, name: str, unit: str, threshold: int = 0):
+        if item_id in self._items:
+            raise ValueError(f"Item {item_id} already exists")
+        item = InventoryItem(item_id, name, unit, threshold)
+        self._items[item_id] = item
+
+    # Get item by ID
+    def get_item(self, item_id: str):
+        if item_id not in self._items:
+            raise KeyError(f"Item {item_id} not found")
+        return self._items[item_id]
+
+    # Mark expired batches as unusable
+    def mark_expired_items(self):
+        expired_items = []
+        for item in self._items.values():
+            for batch in item._batches:
+                if batch.is_expired() and batch.available_quantity > 0:
+                    batch.use(batch.available_quantity)  # mark entire batch as used
+                    expired_items.append(item.item_id)
+                    break
+        return expired_items
+
+    # Calculate items below threshold
+    def calculate_reorder_list(self):
+        reorder = []
+        for item in self._items.values():
+            if item.compute_available_quantity() < item.threshold:
+                reorder.append(item.item_id)
+        return reorder
+
+    # Format inventory snapshot
+    def format_snapshot(self):
+        snapshot = []
+        for item in self._items.values():
+            total = item.compute_available_quantity()
+            snapshot.append(f"{item.item_id} | {item.name} | {total} {item.unit}")
+        return "\n".join(snapshot)
+
+    # Export inventory to CSV
+    def export_csv(self, filepath: str):
+        try:
+            with open(filepath, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Item ID", "Name", "Quantity", "Unit"])
+                for item in self._items.values():
+                    qty = item.compute_available_quantity()
+                    writer.writerow([item.item_id, item.name, qty, item.unit])
+        except Exception as e:
+            raise IOError(f"Failed to write CSV file: {e}")
+
+    # Generate restock plan based on usage log
+    def generate_restock_plan(self, usage_log: dict, lead_time_days: int = 3):
+        plan = {}
+        for item_id, usage in usage_log.items():
+            avg_daily = sum(usage[-7:]) / min(len(usage), 7)
+            available = self.get_item(item_id).compute_available_quantity()
+            if available < avg_daily * lead_time_days:
+                plan[item_id] = round(avg_daily * lead_time_days - available)
+        return plan
+
+
