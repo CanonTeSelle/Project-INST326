@@ -1,5 +1,6 @@
 Overview: Transform your Project 1 function library into an object-oriented system by designing and implementing 4-6 core classes for your Information Science domain. This project demonstrates how OOP combines related data and behavior into cohesive, reusable objects.
 Key Goal: Create well-designed classes with proper encapsulation, validation, and documentation that integrate your Project 1 functions and prepare for inheritance in Project 3.
+Realationships between classes: 
 
 Brainstorming: Here are classes that could be used:
 
@@ -40,4 +41,26 @@ __str__ / __repr__
 
 
 
+3. Inventory
 
+Purpose: Manages all inventory items.
+
+Integrates Functions: add_new_item, format_inventory_snapshot, export_inventory_csv, mark_expired_items, calculate_reorder_list, generate_restock_plan
+
+Attributes: _items (dict of InventoryItem objects)
+
+Methods:
+
+add_new_item(item_id, name, unit, threshold=0)
+
+get_item(item_id)
+
+mark_expired_items()
+
+calculate_reorder_list()
+
+format_snapshot()
+
+export_csv(filepath)
+
+generate_restock_plan(usage_log, lead_time_days=3)
