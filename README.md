@@ -2,7 +2,7 @@
 # Universal Restaurant Inventory Management System
 
 Project Overview
-The Universal Restaurant Inventory Management System (URIMS)** is a Python-based library designed to help restaurants efficiently manage both perishable and non-perishable inventory. The system tracks items in batches, supports FIFO (first-in-first-out) consumption, alerts for near-expiring stock, generates waste reports, forecasts demand, and produces restock plans.  
+The Universal Restaurant Inventory Management System  is a Python-based library designed to help restaurants efficiently manage both perishable and non-perishable inventory. The system tracks items in batches, supports FIFO (first-in-first-out) consumption, alerts for near-expiring stock, generates waste reports, forecasts demand, and produces restock plans.  
 
 Goal: Reduce food waste, prevent stockouts, and streamline restocking by tracking per-batch inventory and predicting demand during peak periods.
 
