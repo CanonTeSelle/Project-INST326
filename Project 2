@@ -1,4 +1,28 @@
 Overview: Transform your Project 1 function library into an object-oriented system by designing and implementing 4-6 core classes for your Information Science domain. This project demonstrates how OOP combines related data and behavior into cohesive, reusable objects.
 Key Goal: Create well-designed classes with proper encapsulation, validation, and documentation that integrate your Project 1 functions and prepare for inheritance in Project 3.
 
-Brainstorming: 
+Brainstorming: Here are classes that could be used:
+
+1. InventoryItem
+
+Purpose: Represents a single inventory item with batches.
+
+Integrates Functions: generate_unique_id, reduce_stock_on_sale, compute_available_quantity, alert_expiring_items
+
+Attributes: _item_id, _name, _unit, _threshold, _batches
+
+Methods:
+
+add_batch(quantity, expiration=None) → add a batch (maps to add_batch)
+
+compute_available_quantity(include_expired=False) → total stock
+
+reduce_stock(quantity, use_fifo=True) → reduce stock on sale
+
+alert_expiring_items(days_threshold=3) → near-expiry batches
+
+__str__ / __repr__
+
+
+
+
