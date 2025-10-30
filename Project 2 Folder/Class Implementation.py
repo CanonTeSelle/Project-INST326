@@ -57,4 +57,95 @@ class Batch:
         return f"Batch({self._batch_id}, {self._quantity}, {self._expiration})"
     
 
-    #
+
+
+
+
+
+# InventoryItem class - represents an item in inventory
+class InventoryItem:
+    # Initialize inventory item
+    def __init__(self, item_id: str, name: str, unit: str, threshold: int = 0):
+        # Validate parameters
+        if not item_id or not isinstance(item_id, str):
+            raise ValueError("item_id must be a non-empty string")
+        if not name or not isinstance(name, str):
+            raise ValueError("name must be a non-empty string")
+        if not unit or not isinstance(unit, str):
+            raise ValueError("unit must be a non-empty string")
+        if not isinstance(threshold, int) or threshold < 0:
+            raise ValueError("threshold must be a non-negative integer")
+
+        self._item_id = item_id
+        self._name = name
+        self._unit = unit
+        self._threshold = threshold
+        self._batches = []  # List of Batch objects
+
+    # Properties for read-only access
+    @property
+    def item_id(self):
+        return self._item_id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def unit(self):
+        return self._unit
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    # Add a batch to this item
+    def add_batch(self, quantity: int, expiration: date = None):
+        batch = Batch(quantity, expiration)
+        self._batches.append(batch)
+
+    # Compute total available quantity
+    def compute_available_quantity(self, include_expired=False) -> int:
+        total = 0
+        for batch in self._batches:
+            if include_expired or not batch.is_expired():
+                total += batch.available_quantity
+        return total
+
+    # Reduce stock for sold items (integrates FIFO if requested)
+    def reduce_stock(self, quantity: int, use_fifo=True):
+        remaining = quantity
+        # Sort batches by expiration date if FIFO
+        batches = sorted(self._batches, key=lambda b: b.expiration or date.max) if use_fifo else self._batches
+        for batch in batches:
+            available = batch.available_quantity
+            if available >= remaining:
+                batch.use(remaining)
+                return
+            else:
+                batch.use(available)
+                remaining -= available
+        if remaining > 0:
+            raise ValueError("Insufficient stock to fulfill sale")
+
+    # Alert batches expiring soon
+    def alert_expiring_items(self, days_threshold=3):
+        alerts = []
+        for batch in self._batches:
+            if batch.expiration and 0 <= (batch.expiration - date.today()).days <= days_threshold:
+                alerts.append(batch)
+        return alerts
+
+    # String representation
+    def __str__(self):
+        return f"{self._name} ({self._unit}) - {self.compute_available_quantity()} units"
+
+    # Debug representation
+    def __repr__(self):
+        return f"InventoryItem({self._item_id}, {self._name})"
+    
+
+
+
+
+    
