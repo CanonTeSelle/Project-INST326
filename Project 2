@@ -4,6 +4,7 @@ Realationships between classes:
 
 Brainstorming: Here are classes that could be used:
 
+
 1. InventoryItem
 
 Purpose: Represents a single inventory item with batches.
@@ -64,3 +65,23 @@ format_snapshot()
 export_csv(filepath)
 
 generate_restock_plan(usage_log, lead_time_days=3)
+
+
+4. UsageLog
+
+Purpose: Tracks item usage over time.
+
+Integrates Functions: record_usage_pattern, forecast_demand, generate_waste_report
+
+Attributes: _usage_records (dict mapping item_id → list of usage events)
+
+Methods:
+
+record_usage(item_id, quantity, timestamp=None)
+
+forecast_demand(item_id, window_days=30)
+
+generate_waste_report(start, end)
+
+
+
