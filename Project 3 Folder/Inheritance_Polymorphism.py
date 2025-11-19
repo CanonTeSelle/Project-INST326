@@ -96,3 +96,19 @@ class AbstractInventoryItem(ABC):
             raise ValueError("Insufficient stock to fulfill request")
         
 
+# Perishable Item (Subclass)
+
+class PerishableItem(AbstractInventoryItem):
+    def compute_available_quantity(self, include_expired=False):
+        total = 0
+        for batch in self._batches:
+            if include_expired or not batch.is_expired():
+                total += batch.available_quantity
+        return total
+
+    def alert_expiring_items(self, days_threshold=3):
+        alerts = []
+        for batch in self._batches:
+            if batch.expiration and 0 <= (batch.expiration - date.today()).days <= days_threshold:
+                alerts.append(batch)
+        return alerts
