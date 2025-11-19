@@ -88,3 +88,30 @@ The Project 1 functions have been integrated into an object-oriented system:
    - Tracks usage events per item
    - Methods: `record_usage()`, `forecast_demand()`, `generate_waste_report()`
 
+
+Project 3
+
+Overview: Python system to track perishable and non-perishable inventory. Handles batches, FIFO, expiration alerts, waste reporting, demand forecasting, and restock planning. Designed using inheritance, polymorphism, and composition.
+
+
+Inheritance:
+
+AbstractInventoryItem → PerishableItem, NonPerishableItem
+
+Shared methods: compute_available_quantity, alert_expiring_items
+
+Specialized behavior for perishable vs non-perishable items
+
+
+Composition:
+
+Inventory contains multiple inventory items
+
+InventoryItem contains multiple batches
+
+
+Polymorphism:
+
+Methods like compute_available_quantity and alert_expiring_items behave differently depending on item type
+
+Eliminates long if/else statements
