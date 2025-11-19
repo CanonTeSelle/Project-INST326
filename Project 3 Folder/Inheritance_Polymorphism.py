@@ -112,3 +112,12 @@ class PerishableItem(AbstractInventoryItem):
             if batch.expiration and 0 <= (batch.expiration - date.today()).days <= days_threshold:
                 alerts.append(batch)
         return alerts
+    
+# Non-Perishable Item (Subclass)
+
+class NonPerishableItem(AbstractInventoryItem):
+    def compute_available_quantity(self, include_expired=False):
+        return sum(batch.available_quantity for batch in self._batches)
+
+    def alert_expiring_items(self, days_threshold=3):
+        return []
