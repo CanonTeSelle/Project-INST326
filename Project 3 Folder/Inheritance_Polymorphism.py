@@ -42,3 +42,57 @@ class Batch:
 
     def __repr__(self):
         return f"Batch({self._batch_id}, {self._quantity}, {self._expiration})"
+    
+
+    
+    # Abstract Inventory Item (Inheritance)
+
+class AbstractInventoryItem(ABC):
+    def __init__(self, item_id: str, name: str, unit: str, threshold: int = 0):
+        self._item_id = item_id
+        self._name = name
+        self._unit = unit
+        self._threshold = threshold
+        self._batches = []
+
+    @property
+    def item_id(self):
+        return self._item_id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def unit(self):
+        return self._unit
+
+    @abstractmethod
+    def compute_available_quantity(self, include_expired=False):
+        # To be implemented by subclasses
+        pass
+
+    @abstractmethod
+    def alert_expiring_items(self, days_threshold=3):
+        pass
+
+    # Add batch
+    def add_batch(self, quantity: int, expiration: date = None):
+        self._batches.append(Batch(quantity, expiration))
+
+    # Reduce stock (FIFO)
+    def reduce_stock(self, quantity: int, use_fifo=True):
+        remaining = quantity
+        batches = sorted(self._batches, key=lambda b: b.expiration or date.max) if use_fifo else self._batches
+        for batch in batches:
+            available = batch.available_quantity
+            if available >= remaining:
+                batch.use(remaining)
+                return
+            else:
+                batch.use(available)
+                remaining -= available
+        if remaining > 0:
+            raise ValueError("Insufficient stock to fulfill request")
+        
+
