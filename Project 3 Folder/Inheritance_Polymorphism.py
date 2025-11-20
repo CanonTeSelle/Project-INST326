@@ -180,3 +180,30 @@ class Inventory:
                     writer.writerow([item.item_id, item.name, qty, item.unit])
         except Exception as e:
             raise IOError(f"Failed to write CSV file: {e}")
+        
+        
+# Usage Log
+
+class UsageLog:
+    def __init__(self):
+        self._usage_records = defaultdict(list)
+
+    def record_usage(self, item_id: str, quantity: int, timestamp: datetime = None):
+        if timestamp is None:
+            timestamp = datetime.now()
+        self._usage_records[item_id].append({"quantity": quantity, "timestamp": timestamp})
+
+    def forecast_demand(self, item_id: str, window_days: int = 30):
+        if item_id not in self._usage_records or not self._usage_records[item_id]:
+            raise KeyError(f"No usage data for {item_id}")
+        data = self._usage_records[item_id][-window_days:]
+        total_qty = sum(entry["quantity"] for entry in data)
+        unique_days = len(set(e["timestamp"].date() for e in data))
+        return round(total_qty / max(unique_days, 1), 2)
+
+    def generate_waste_report(self, waste_log: list, start: date, end: date):
+        report = defaultdict(int)
+        for entry in waste_log:
+            if start <= entry["date"] <= end:
+                report[entry["item_id"]] += entry["quantity"]
+        return dict(report)
