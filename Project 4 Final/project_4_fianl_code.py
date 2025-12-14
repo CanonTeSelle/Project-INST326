@@ -289,7 +289,7 @@ class Inventory:
             inv.add_item(obj)
         return inv
 
-    # CSV import expects columns: item_id,name,unit,quantity,expiration (YYYY-MM-DD or empty),threshold(optional)
+    # CSV import 
     def import_from_csv(self, filepath: str):
         p = Path(filepath)
         if not p.exists():
