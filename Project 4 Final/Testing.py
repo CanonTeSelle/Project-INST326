@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import date, timedelta, datetime
 import json
 
-from project_4_final_code import Batch, PerishableItem, NonPerishableItem, Inventory, UsageLog
+from project_4_fianl_code import Batch, PerishableItem, NonPerishableItem, Inventory, UsageLog
 
 class UnitTests(unittest.TestCase):
     def test_batch_use_and_expiration(self):
