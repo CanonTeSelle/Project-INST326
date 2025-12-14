@@ -181,3 +181,170 @@ class NonPerishableItem(AbstractInventoryItem):
         for b in d.get("batches", []):
             item._batches.append(Batch.from_dict(b))
         return item
+    
+
+# Inventory
+
+class Inventory:
+    def __init__(self):
+        self._items = {}
+
+    def add_item(self, item: AbstractInventoryItem):
+        self._items[item.item_id] = item
+
+    def get_item(self, item_id):
+        return self._items.get(item_id)
+
+    def mark_expired_items(self):
+        expired_items = []
+        for item in self._items.values():
+            for batch in item._batches:
+                if batch.is_expired() and batch.available_quantity > 0:
+                    batch.use(batch.available_quantity)
+                    expired_items.append(item.item_id)
+                    break
+        return expired_items
+
+    def calculate_reorder_list(self):
+        reorder = []
+        for item in self._items.values():
+            if item.compute_available_quantity() < item.threshold:
+                reorder.append(item.item_id)
+        return reorder
+
+    def generate_restock_plan(self, usage_log: dict, lead_time_days=3):
+        plan = {}
+        for item_id, usage in usage_log.items():
+            item = self.get_item(item_id)
+            if not item:
+                continue
+            avg_daily = sum(usage[-7:]) / min(len(usage), 7)
+            available = item.compute_available_quantity()
+            if available < avg_daily * lead_time_days:
+                plan[item_id] = round(avg_daily * lead_time_days - available)
+        return plan
+
+    def format_snapshot(self):
+        snapshot = []
+        for item in self._items.values():
+            total = item.compute_available_quantity()
+            snapshot.append(f"{item.item_id} | {item.name} | {total} {item.unit}")
+        return "\n".join(snapshot)
+
+    def export_csv(self, filepath: str):
+        p = Path(filepath)
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            with p.open("w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Item ID", "Name", "Quantity", "Unit"])
+                for item in self._items.values():
+                    qty = item.compute_available_quantity()
+                    writer.writerow([item.item_id, item.name, qty, item.unit])
+        except Exception as e:
+            raise IOError(f"Failed to write CSV file: {e}")
+
+    def export_json_report(self, filepath: str):
+        p = Path(filepath)
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            data = {item_id: item.to_dict() for item_id, item in self._items.items()}
+            with p.open("w") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            raise IOError(f"Failed to write JSON report: {e}")
+
+    # persistence: save/load entire inventory to JSON
+    def save(self, filepath: str):
+        p = Path(filepath)
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            payload = {item_id: item.to_dict() for item_id, item in self._items.items()}
+            with p.open("w") as f:
+                json.dump(payload, f, indent=2)
+        except Exception as e:
+            raise IOError(f"Failed to save inventory: {e}")
+
+    @classmethod
+    def load(cls, filepath: str):
+        p = Path(filepath)
+        if not p.exists():
+            raise FileNotFoundError(f"No file at {filepath}")
+        try:
+            with p.open("r") as f:
+                payload = json.load(f)
+        except Exception as e:
+            raise IOError(f"Failed to load inventory: {e}")
+
+        inv = cls()
+        for item_id, d in payload.items():
+            typ = d.get("type", "NonPerishableItem")
+            if typ == "PerishableItem":
+                obj = PerishableItem.from_dict(d)
+            elif typ == "NonPerishableItem":
+                obj = NonPerishableItem.from_dict(d)
+            else:
+                # fallback: try nonperishable
+                obj = NonPerishableItem.from_dict(d)
+            inv.add_item(obj)
+        return inv
+
+    # CSV import expects columns: item_id,name,unit,quantity,expiration (YYYY-MM-DD or empty),threshold(optional)
+    def import_from_csv(self, filepath: str):
+        p = Path(filepath)
+        if not p.exists():
+            raise FileNotFoundError(f"No CSV at {filepath}")
+        try:
+            with p.open("r", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    item_id = row.get("item_id") or row.get("Item ID") or row.get("id")
+                    name = row.get("name") or row.get("Name")
+                    unit = row.get("unit") or row.get("Unit") or "unit"
+                    q = int(row.get("quantity") or row.get("Quantity") or 0)
+                    exp_raw = row.get("expiration") or row.get("Expiration") or ""
+                    exp = date.fromisoformat(exp_raw) if exp_raw else None
+                    threshold = int(row.get("threshold") or row.get("Threshold") or 0)
+
+                    if item_id in self._items:
+                        self._items[item_id].add_batch(q, exp)
+                    else:
+                        # Choose perishable if expiration present
+                        if exp:
+                            item = PerishableItem(item_id, name, unit, threshold)
+                        else:
+                            item = NonPerishableItem(item_id, name, unit, threshold)
+                        item.add_batch(q, exp)
+                        self.add_item(item)
+        except Exception as e:
+            raise IOError(f"Failed to import CSV: {e}")
+
+
+# Usage Log
+
+class UsageLog:
+    def __init__(self):
+        self._usage_records = defaultdict(list)
+
+    def record_usage(self, item_id: str, quantity: int, timestamp: datetime = None):
+        if timestamp is None:
+            timestamp = datetime.now()
+        self._usage_records[item_id].append({"quantity": quantity, "timestamp": timestamp})
+
+    def forecast_demand(self, item_id: str, window_days: int = 30):
+        if item_id not in self._usage_records or not self._usage_records[item_id]:
+            raise KeyError(f"No usage data for {item_id}")
+        data = self._usage_records[item_id][-window_days:]
+        total_qty = sum(entry["quantity"] for entry in data)
+        unique_days = len(set(e["timestamp"].date() for e in data))
+        return round(total_qty / max(unique_days, 1), 2)
+
+    def generate_waste_report(self, waste_log: list, start: date, end: date):
+        report = defaultdict(int)
+        for entry in waste_log:
+            if start <= entry["date"] <= end:
+                report[entry["item_id"]] += entry["quantity"]
+        return dict(report)
+    
+
+
